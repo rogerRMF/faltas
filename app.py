@@ -169,6 +169,44 @@ if uploaded_file:
     cards_html += "</div></div>"
 
     components.html(cards_html, height=520, scrolling=True)
+    
+import altair as alt
+
+# ----------------- FUNÇÃO PARA GERAR GRÁFICO ALTAR -----------------
+def gerar_grafico_altair(dados_funcionario, nome):
+    df_temp = pd.DataFrame({
+        "Categoria": ["Presente", "Faltas", "DSR", "Férias", "Afastamento",
+                      "Suspenso", "Atestado", "Banco Horas"],
+        "Valores": [
+            int(dados_funcionario["PRESENTE"]),
+            int(dados_funcionario["FALTA"]),
+            int(dados_funcionario["DSR"]),
+            int(dados_funcionario["FÉRIAS"]),
+            int(dados_funcionario["AFASTAMENTO MÉDICO"]),
+            int(dados_funcionario["SUSPENSO"]),
+            int(dados_funcionario["ATESTADO MÉDICO"]),
+            int(dados_funcionario["BANCO DE HORAS"])
+        ]
+    })
+
+    chart = (
+        alt.Chart(df_temp)
+        .mark_bar(color="#0b3d91", opacity=0.25)
+        .encode(
+            x=alt.X("Categoria", sort=None, axis=alt.Axis(labelAngle=-45)),
+            y="Valores"
+        )
+        .properties(width=500, height=300, title=f"Resumo: {nome}")
+    )
+    return chart
+
+# ----------------- GERAR GRÁFICO SE HOUVER FILTRO -----------------
+if busca_nome and not resumo_display.empty:
+    for _, r in resumo_display.iterrows():
+        nome_func = r[nome_col]
+        grafico_filtrado = gerar_grafico_altair(r, nome_func)
+        st.altair_chart(grafico_filtrado, use_container_width=True)
+
     # ---------------- RESUMO GERAL AGREGADO ----------------
     total_faltas = resumo["FALTA"].sum()
     total_atestados = resumo["ATESTADO MÉDICO"].sum()
